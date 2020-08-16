@@ -2,13 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using FluentValidation.AspNetCore;
+using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using TiendaServicios.Api.Autor.Aplicacion;
+using TiendaServicios.Api.Autor.Persistencia;
 
 namespace TiendaServicios.Api.Autor
 {
@@ -24,7 +30,16 @@ namespace TiendaServicios.Api.Autor
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddControllers().AddFluentValidation(config => config.RegisterValidatorsFromAssemblyContaining<Nuevo>());
+
+            services.AddDbContext<ContextoAutor>(options => 
+            {
+                options.UseNpgsql(Configuration.GetConnectionString("ConexionDatabase"));
+            });
+
+            services.AddMediatR(typeof(Nuevo.Manejador).Assembly);
+
+            services.AddAutoMapper(typeof(Consulta.Manejador));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
